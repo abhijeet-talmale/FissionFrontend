@@ -1,0 +1,25 @@
+.form-box{
+    width: 63%;
+    max-width: 265px;
+    margin: auto;
+    position: relative;
+    top: 29px;
+}
+.label1{
+    position: relative;
+    top: -51px;
+    left: 10px;
+    color: black;
+    background-color: white;
+}
+/* #lab2{
+    position: relative;
+    top: -49px;
+    left: 10px;
+    color: black;
+    background-color: white;
+} */
+.btn{
+    background-color: rgb(146, 147, 147);
+    color: white;
+}
