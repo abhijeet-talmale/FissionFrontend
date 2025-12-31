@@ -21,7 +21,7 @@ const Login = () => {
         onSubmit={async (values, { setSubmitting }) => {
           try {
             const res = await axios.post(
-              "https://fisssionbackendpro.onrender.com/login",
+              "https:fisssionbackendpro.onrender.com/login",
               values,
               { withCredentials: true }   // allow cookies if backend sends JWT cookie
             );
