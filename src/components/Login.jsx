@@ -21,7 +21,32 @@ const Login = () => {
         onSubmit={async (values, { setSubmitting }) => {
           try {
             const res = await axios.post(
-              "https://fisssionbackendpro.onrender.com/login",
+              "app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if(!email || !password){
+      return res.status(400).json({ message: "Email & Password required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.password !== password) {
+      return res.status(401).json({ message: "Incorrect password" });
+    }
+
+    res.json({ message: "Login successful", user });
+
+  } catch (err) {
+    console.log("LOGIN ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+",
               values,
               { withCredentials: true }   // allow cookies if backend sends JWT cookie
             );
