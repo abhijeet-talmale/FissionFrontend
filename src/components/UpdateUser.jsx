@@ -30,7 +30,7 @@ const UpdateUser = () => {
         formData.append(key, values[key]);
       }
 
-      await axios.put(`http://localhost:3001/users/${id}`, formData, {
+      await axios.put(`https://fisssionbackendpro.onrender.com/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -46,7 +46,7 @@ const UpdateUser = () => {
 
     useEffect(() => {
       axios
-        .get(`http://localhost:3001/users/${id}`)
+        .get(`https://fisssionbackendpro.onrender.com/${id}`)
         .then((res) => {
           setValues(res.data);
         })
