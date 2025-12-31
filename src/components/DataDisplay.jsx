@@ -9,7 +9,7 @@ const DataDisplay = () => {
   // Fetch Users
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/users");
+      const res = await axios.get("https://fisssionbackendpro.onrender.com//users");
       setUsers(res.data);
     } catch (err) {
       console.log("Error fetching users", err);
@@ -31,7 +31,7 @@ const DataDisplay = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://localhost:3001/users/${id}`);
+      await axios.delete(`https://fisssionbackendpro.onrender.com//${id}`);
       alert("User Deleted Successfully");
       fetchUsers();
     } catch (err) {
