@@ -25,7 +25,7 @@ const Login = () => {
        }}
        onSubmit={async (values, { setSubmitting }) => {
   try {
-    const res = await axios.post("https://fisssionbackendpro.onrender.com/login", {
+    const res = await axios.post("https://fisssionbackendpro.onrender.com//login", {
       email: values.email,
       password: values.password
     });
