@@ -43,7 +43,7 @@ onSubmit={async (values, { setSubmitting }) => {
       formData.append("accountType", values.accountType);
       formData.append("pic", values.pic);
 
-      await axios.post("http://localhost:3001/register", formData, {
+      await axios.post("https:/fisssionbackendpro.onrender.com/register", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
