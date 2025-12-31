@@ -1,131 +1,180 @@
-import React from "react";
-import { Formik } from "formik";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+const express = require('express');
+const mongoose = require('mongoose');
+const User = require('./models/CreateUser');
+const cors = require('cors');
+const multer = require("multer");
+const path = require("path");
+const auth = require("./middleware/auth");
 
-const Login = () => {
-  const navigate = useNavigate();
+const jwt = require("jsonwebtoken");
 
-  return (
-    <div className="container p-4 shadow rounded" style={{ maxWidth: 420 }}>
-      <h3 className="mb-3">Login</h3>
 
-      <Formik
-        initialValues={{ email: "", password: "" }}
-        validate={(values) => {
-          const errors = {};
-          if (!values.email) errors.email = "Email required";
-          if (!values.password) errors.password = "Password required";
-          return errors;
-        }}
-        onSubmit={async (values, { setSubmitting }) => {
-          try {
-            const res = await axios.post(
-              "app.post("/login", async (req, res) => {
+require('dotenv').config();
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Static folder
+app.use("/Images", express.static("public/Images"));
+
+// Multer Storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/Images");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+
+const upload = multer({ storage });
+
+// MongoDB Connect
+mongoose.connect(
+  "mongodb+srv://abhijeettalmale76:test@auth.stfeqkd.mongodb.net/AuthUser"
+)
+.then(() => console.log("MongoDB Connected"))
+.catch(err => console.log(err));
+
+// Register
+const bcrypt = require("bcryptjs");
+
+app.post("/register", upload.single("pic"), async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    const user = await User.create({
+      fullName: req.body.fullName,
+      email: req.body.email,
+      password: hashedPassword,
+      pnumber: req.body.pnumber,
+      cname: req.body.cname,
+      pic: req.file ? `/Images/${req.file.filename}` : null
+    });
+
+    res.json(user);
+  } catch (err) {
+    res.status(400).json(err);
+  }
+});
+
+// LOgin
+
+
+
+
+
+
+
+app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if(!email || !password){
-      return res.status(400).json({ message: "Email & Password required" });
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ message: "User not found" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid password" });
+
+    if (err.response) {
+  alert(err.response.data.message);
+} else {
+  alert("Server not reachable");
+}
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json("Server Error");
+  }
+});
+
+// Delete user
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const user = await User.findOne({ email });
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    console.log("DELETE ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get single user by ID
+app.get("/users/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.password !== password) {
-      return res.status(401).json({ message: "Incorrect password" });
-    }
-
-    res.json({ message: "Login successful", user });
-
+    res.json(user);
   } catch (err) {
-    console.log("LOGIN ERROR:", err);
+    console.log("GET USER ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
-",
-              values,
-              { withCredentials: true }   // allow cookies if backend sends JWT cookie
-            );
 
-            alert("Login Successful");
+// Update User
+// Update User (with image upload support)
+app.put("/users/:id", upload.single("pic"), async (req, res) => {
+  try {
+    const userId = req.params.id;
 
-            // If backend returns token
-            if (res.data.token) {
-              localStorage.setItem("token", res.data.token);
-            }
+    const updateData = {
+      fullName: req.body.fullName,
+      email: req.body.email,
+      password: req.body.password,
+      pnumber: req.body.pnumber,
+      cname: req.body.cname,
+      accountType: req.body.accountType
+    };
 
-            navigate("/data");
-          } catch (err) {
-            if (err.response) {
-              alert(err.response.data.message || "Login failed");
-            } else {
-              alert("Server not reachable");
-            }
-          }
+    // If new image uploaded
+    if (req.file) {
+      updateData.pic = `/Images/${req.file.filename}`;
+    }
 
-          setSubmitting(false);
-        }}
-      >
-        {({
-          values,
-          errors,
-          touched,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          isSubmitting,
-        }) => (
-          <form onSubmit={handleSubmit}>
-            <input
-              type="email"
-              className="form-control mb-2"
-              placeholder="Email Address"
-              name="email"
-              value={values.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-            />
-            {errors.email && touched.email && (
-              <small className="text-danger">{errors.email}</small>
-            )}
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true }
+    );
 
-            <input
-              type="password"
-              className="form-control mb-2"
-              placeholder="Password"
-              name="password"
-              value={values.password}
-              onChange={handleChange}
-              onBlur={handleBlur}
-            />
-            {errors.password && touched.password && (
-              <small className="text-danger">{errors.password}</small>
-            )}
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-            <button
-              type="submit"
-              className="btn btn-primary w-100 mt-2"
-              disabled={isSubmitting}
-            >
-              Login
-            </button>
+    res.json({ message: "User updated successfully", user: updatedUser });
 
-            <button
-              type="button"
-              className="btn btn-outline-secondary w-100 mt-2"
-              onClick={() => navigate("/create")}
-            >
-              Create Account
-            </button>
-          </form>
-        )}
-      </Formik>
-    </div>
-  );
-};
+  } catch (err) {
+    console.log("UPDATE ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
-export default Login;
+
+app.listen(3001, () => console.log("Server running on port 3001"));
